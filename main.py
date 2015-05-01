@@ -5,6 +5,7 @@ import urllib2
 import time
 from urllib import urlencode
 from datetime import datetime
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 import vk_auth
 
@@ -96,7 +97,8 @@ def latest_news():
     return _news
 
 
-if __name__ == '__main__':
+# получаем новости и формуируем ответ
+def get():
     text = '<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"'
     text += '\n\t xmlns:content="http://purl.org/rss/1.0/modules/content/"'
     text += '\n\t xmlns:wfw="http://wellformedweb.org/CommentAPI/"'
@@ -134,6 +136,48 @@ if __name__ == '__main__':
     text += '\n</channel>'
     text += '\n</rss>'
 
-    f = open("/var/www/vkfeed.caaat.pro/atom.xml", 'w')
-    f.write(text)
-    f.close()
+    # path = "/var/www/vkfeed.caaat.pro/atom.xml"
+    #path = "atom.xml"
+    # f = open(path, 'w')
+    #f.write(text)
+    #f.close()
+
+    return text
+
+
+class S(BaseHTTPRequestHandler):
+    def _set_headers(self):
+        self.send_header("Content-type", "application/rss+xml; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Expose-Headers", "Access-Control-Allow-Origin")
+        self.send_header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+        self.send_header("Accept-Language", "ru-RU,ru;q=0.8")
+        self.end_headers()
+
+    def do_GET(self):
+        print(self.path)
+
+        if self.path == "/favicon.ico":
+            self.send_response(200)
+            self._set_headers()
+# определять страницу и отдавать контент только с ниё!
+        text = get()
+        self.wfile.write(text)
+
+    def do_HEAD(self):
+        self._set_headers()
+
+    def do_POST(self):
+        self._set_headers()
+        self.wfile.write("1")
+
+
+def run(server_class=HTTPServer, handler_class=S, port=8000):
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    print 'Starting httpd...'
+    httpd.serve_forever()
+
+
+if __name__ == '__main__':
+    run()
