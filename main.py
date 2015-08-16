@@ -121,7 +121,7 @@ def get():
     news = latest_news()
     for n in news:
         text += '\n\t<item>'
-        text += '\n\t\t<title>' + n['author'].encode('utf-8') + '</title>'
+        text += '\n\t\t<title>' + n['text'].encode('utf-8')[:100] + '</title>'
         text += '\n\t\t<link>' + n['link'] + '</link>'
         text += '\n\t\t<comments>' + n['link'] + '</comments>'
         text += '\n\t\t<pubDate>' + n['date'].encode('utf-8') + '</pubDate>'
@@ -136,48 +136,11 @@ def get():
     text += '\n</channel>'
     text += '\n</rss>'
 
-    # path = "/var/www/vkfeed.caaat.pro/atom.xml"
-    #path = "atom.xml"
-    # f = open(path, 'w')
-    #f.write(text)
-    #f.close()
-
-    return text
-
-
-class S(BaseHTTPRequestHandler):
-    def _set_headers(self):
-        self.send_header("Content-type", "application/rss+xml; charset=utf-8")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Expose-Headers", "Access-Control-Allow-Origin")
-        self.send_header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-        self.send_header("Accept-Language", "ru-RU,ru;q=0.8")
-        self.end_headers()
-
-    def do_GET(self):
-        print(self.path)
-
-        if self.path == "/favicon.ico":
-            self.send_response(200)
-            self._set_headers()
-# определять страницу и отдавать контент только с ниё!
-        text = get()
-        self.wfile.write(text)
-
-    def do_HEAD(self):
-        self._set_headers()
-
-    def do_POST(self):
-        self._set_headers()
-        self.wfile.write("1")
-
-
-def run(server_class=HTTPServer, handler_class=S, port=8000):
-    server_address = ('', port)
-    httpd = server_class(server_address, handler_class)
-    print 'Starting httpd...'
-    httpd.serve_forever()
-
+    path = "/var/www/vkfeed.caaat.pro/atom.xml"
+    #path = "1"
+    f = open(path, 'w')
+    f.write(text)
+    f.close()
 
 if __name__ == '__main__':
-    run()
+    get()
